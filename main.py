@@ -13,7 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from scipy.fft import fft, fftfreq
 
-TIME = 30 # define time 
+TIME = 60 # define time 
 
 # the target string to determine if STM 32 is connected 
 STM32Name = "STMicroelectronics STLink Virtual COM Port"
@@ -104,7 +104,12 @@ def gather_data() :
         
     ser.write(b"STP")       #"Send RUN to STM32"
     
+def process_data_band(band_list):
+    raise NotImplementedError
 
+def process_data_pressure(pressure_list) :
+    
+    raise NotImplementedError
 
 def plot(time_pressure,pressure_list, time_band,band_list) : 
     plt.subplot(2,1,1)
@@ -141,7 +146,14 @@ def main():
     time_band= np.linspace(0,len(mavg_band_list) -1 , len(mavg_band_list) )
     plot(time_pressure, mavg_pressure_list, time_band, mavg_band_list)
        
+    with open("Project_3/pressure_data.csv", 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([pressure_list])
         
+    with open("Project_3/band_data.csv", 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([band_list])
+                
     
     
 if __name__ == "__main__":
