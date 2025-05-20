@@ -13,6 +13,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from scipy.fft import fft, fftfreq
 from scipy.signal import find_peaks
+from scipy import sparse
+from scipy.sparse.linalg import spsolve
 
 TIME = 60 # define time 
 
@@ -93,10 +95,11 @@ def gather_data() :
             elif "Sensor 2: " in unprocessed_data[0]: 
                 band = int(unprocessed_data[0].split(": ")[1])
                 band_list.append(band)
-                print(f"Sensor 1 : {pressure}           Sensor 2 : {band}")
+                
                 
             end_time = time.time()
             time_diff = end_time - start_time
+            print(f"TIME: {round(time_diff,3)}\t\tSensor 1 : {pressure}\t\tSensor 2 : {band}")
  
 
                         
@@ -137,13 +140,13 @@ def plot_together(time_pressure,pressure_list, time_band,band_list,figname,fig_n
     ax2.set_ylabel("Band")        
     plt.grid()
  
-def plot_combined(combined_time,combined_data,fignum):
-    plt.figure(5)
+def plot_combined(combined_time,combined_data,fignum,title):
+    plt.figure(fignum)
     plt.plot(combined_time,combined_data)
     plt.xlabel("Time")
     plt.ylabel("Data")
     plt.grid()
-    plt.title("Combined Data Plot")
+    plt.title(f"Combined Data Plot {title}")
     plt.xlim([0,TIME])
      
 def moving_avg_filter(data_list) : 
@@ -163,6 +166,18 @@ def pred(data_list,thres):
     
     return len(valley_indices), valley_indices
 
+def baseline_als(y, lam, p, niter=10):
+  L = len(y)
+  D = sparse.diags([1,-2,1],[0,-1,-2], shape=(L,L-2))
+  w = np.ones(L)
+  for i in range(niter):
+    W = sparse.spdiags(w, 0, L, L)
+    Z = W + lam * D.dot(D.transpose())
+    z = spsolve(Z, w*y)
+    w = p * (y > z) + (1-p) * (y < z)
+  return z
+
+
 def main(): 
     
     
@@ -176,7 +191,7 @@ def main():
             # plotting 
             time_pressure = np.linspace(0,TIME , len(pressure_list) )
             time_band= np.linspace(0,TIME , len(band_list) )
-            # plot(time_pressure, pressure_list, time_band, band_list, figname = "Raw",fig_num=1)
+            plot(time_pressure, pressure_list, time_band, band_list, figname = "Raw",fig_num=1)
             
             # Noise Reduction digiting signal processing 
             mavg_pressure_list = moving_avg_filter(pressure_list)
@@ -184,7 +199,7 @@ def main():
             mavg_band_list = moving_avg_filter(mavg_band_list)
             time_pressure = np.linspace(0,TIME , len(mavg_pressure_list) )
             time_band= np.linspace(0,TIME , len(mavg_band_list) )
-            # plot(time_pressure, mavg_pressure_list, time_band, mavg_band_list,figname = "MAVG",fig_num=2)
+            plot(time_pressure, mavg_pressure_list, time_band, mavg_band_list,figname = "MAVG",fig_num=2)
             
             mean_band = np.mean(mavg_band_list)
             std_band = np.std(mavg_band_list)
@@ -224,9 +239,27 @@ def main():
                     combined_time = time_band
                     
             combined_pred,___ = pred(combined_data,1)
-            print(f"Combined pred: {combined_pred}")
-            plot_combined(combined_time,combined_data,5)
+            plot_combined(combined_time,combined_data,5,"Before Correction")
+            print(f"Breathe Rate (Combined Pred): {combined_pred}")
+            
+            
+            
+            z = baseline_als(combined_data,lam=1e5,p =0.01)
+            corrected_combined_data = combined_data - z 
+            plot_combined(combined_time,corrected_combined_data,6,"After Correction")
+            
+            corrected_combined_pred,___ = pred(corrected_combined_data,0.9)
+            print(f"Breathe Rate (Corrected Combined Pred): {corrected_combined_pred}")
             plt.show() 
+                        
+            # with open("Project_3/combined_data.csv", 'w', newline='') as file:
+            #     writer = csv.writer(file)
+            #     writer.writerow(combined_data)
+                
+            # with open("Project_3/corrected_combined_data.csv", 'w', newline='') as file:
+            #     writer = csv.writer(file)
+            #     writer.writerow(corrected_combined_data)
+                                
              
         elif user == "N" or user == "n" : 
             break
