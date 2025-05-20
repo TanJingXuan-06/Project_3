@@ -73,6 +73,8 @@ def gather_data() :
         start_time = time.time() 
         end_time = time.time()
         time_diff = end_time - start_time
+        pressure = 0 
+        band = 0
 
         # take data according to a time frame we set 
         while time_diff <= TIME : 
@@ -85,13 +87,13 @@ def gather_data() :
             if "Sensor 1: " in unprocessed_data[0]: 
                 pressure = int(unprocessed_data[0].split(": ")[1])
                 pressure_list.append(pressure)
-                print(f"Sensor 1 : {pressure}")
+                # print(f"Sensor 1 : {pressure}")
     
                 
             elif "Sensor 2: " in unprocessed_data[0]: 
                 band = int(unprocessed_data[0].split(": ")[1])
                 band_list.append(band)
-                print(f"Sensor 2 : {band}")
+                print(f"Sensor 1 : {pressure}           Sensor 2 : {band}")
                 
             end_time = time.time()
             time_diff = end_time - start_time
@@ -108,16 +110,18 @@ def gather_data() :
 def plot(time_pressure,pressure_list, time_band,band_list,figname,fig_num = 1) : 
     plt.figure(fig_num,figsize=(10,6))
     plt.subplot(2,1,1)
-    plt.plot(time_pressure,pressure_list)
+    plt.plot(time_pressure,pressure_list,color='blue')
     plt.title(f"Pressure Data ({figname})")
     plt.xlabel("Pressure")
     plt.ylabel("Time")
+    plt.xlim([0,10])
     plt.grid()
     plt.subplot(2,1,2)
-    plt.plot(time_band,band_list)
+    plt.plot(time_band,band_list,color='red')
     plt.title(f"Band Data ({figname})")    
     plt.xlabel("Band")
     plt.ylabel("Time")
+    plt.xlim([0,10])
     plt.grid()
     plt.subplots_adjust(hspace=0.5)  # Increase vertical space between subplots
       
@@ -149,18 +153,29 @@ def main():
             pressure_list, band_list = gather_data()
             
             # plotting 
-            time_pressure = np.linspace(0,len(pressure_list) -1 , len(pressure_list) )
-            time_band= np.linspace(0,len(band_list) -1 , len(band_list) )
+            time_pressure = np.linspace(0,TIME , len(pressure_list) )
+            time_band= np.linspace(0,TIME , len(band_list) )
             plot(time_pressure, pressure_list, time_band, band_list, figname = "Raw",fig_num=1)
             
             # Noise Reduction digiting signal processing 
             mavg_pressure_list = moving_avg_filter(pressure_list)
             mavg_band_list = moving_avg_filter(band_list)
             mavg_band_list = moving_avg_filter(mavg_band_list)
-            time_pressure = np.linspace(0,len(mavg_pressure_list) -1 , len(mavg_pressure_list) )
-            time_band= np.linspace(0,len(mavg_band_list) -1 , len(mavg_band_list) )
+            time_pressure = np.linspace(0,TIME , len(mavg_pressure_list) )
+            time_band= np.linspace(0,TIME , len(mavg_band_list) )
             plot(time_pressure, mavg_pressure_list, time_band, mavg_band_list,figname = "MAVG",fig_num=2)
+            
+            
+            # mavg_band_list_norm = 
+            # mavg_pressure_list_norm = 
+            # time_pressure = 
+            # time_band = 
+            # plot
+            
             plt.show()
+            
+            
+            
             
             ## Data Processing     
             band_pred, ___ = pred(-(np.array(mavg_band_list)))
