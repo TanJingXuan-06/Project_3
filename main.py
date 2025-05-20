@@ -165,17 +165,32 @@ def main():
             time_band= np.linspace(0,TIME , len(mavg_band_list) )
             plot(time_pressure, mavg_pressure_list, time_band, mavg_band_list,figname = "MAVG",fig_num=2)
             
+            mean_band = np.mean(mavg_band_list)
+            std_band = np.std(mavg_band_list)
+            mavg_band_list_norm = (mavg_band_list - mean_band) / std_band
             
-            # mavg_band_list_norm = 
-            # mavg_pressure_list_norm = 
-            # time_pressure = 
-            # time_band = 
-            # plot
+            mean_pressure = np.mean(mavg_pressure_list)
+            std_presure = np.std(mavg_pressure_list)
+            mavg_pressure_list_norm = (mavg_band_list - mean_pressure) / std_presure
+            time_pressure = np.linspace(0, TIME, len(mavg_pressure_list_norm))
+            time_band = np.linspace(0, TIME, len(mavg_pressure_list_norm))
+
+            plt.figure()
+            plt.subplot(1,2,1)
+            plot(time_band,mavg_band_list_norm)
+            plt.title("Normalised Band Graph")
+            plt.xlabel("Time")
+            plt.ylabel("Band")
+            plt.grid()
+
+            plt.subplot(1,2,2)
+            plot(time_pressure,mavg_pressure_list_norm)
+            plt.title("Normalised Pressure Graph")
+            plt.xlabel("Time")
+            plt.ylabel("Pressure")
+            plt.grid()
             
             plt.show()
-            
-            
-            
             
             ## Data Processing     
             band_pred, ___ = pred(-(np.array(mavg_band_list)))
