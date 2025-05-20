@@ -201,7 +201,7 @@ def main():
             band_pred, ___ = pred((np.array(mavg_band_list_norm)),0.2)
             pressure_pred, ___ = pred(-mavg_pressure_list_norm,0.3)
             
-            print(f"Pressure Pred: {pressure_pred} \nBand pred: {band_pred}")
+            # print(f"Pressure Pred: {pressure_pred} \nBand pred: {band_pred}")
             plot(time_pressure, mavg_pressure_list_norm, time_band, mavg_band_list_norm,figname = "MAVG_NORM",fig_num=3)          
             
             plot_together(time_pressure, -mavg_pressure_list_norm, time_band, mavg_band_list_norm,figname = "MAVG_NORM_TGT",fig_num=4)
@@ -227,10 +227,7 @@ def main():
             print(f"Combined pred: {combined_pred}")
             plot_combined(combined_time,combined_data,5)
             plt.show() 
-            
-            
-            
-                        
+             
         elif user == "N" or user == "n" : 
             break
         
