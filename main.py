@@ -14,7 +14,7 @@ from sklearn.model_selection import train_test_split
 from scipy.fft import fft, fftfreq
 from scipy.signal import find_peaks
 
-TIME = 20 # define time 
+TIME = 60 # define time 
 
 # the target string to determine if STM 32 is connected 
 STM32Name = "STMicroelectronics STLink Virtual COM Port"
@@ -136,7 +136,16 @@ def plot_together(time_pressure,pressure_list, time_band,band_list,figname,fig_n
     ax2.plot(time_band,band_list,color='red') 
     ax2.set_ylabel("Band")        
     plt.grid()
-      
+ 
+def plot_combined(combined_time,combined_data,fignum):
+    plt.figure(5)
+    plt.plot(combined_time,combined_data)
+    plt.xlabel("Time")
+    plt.ylabel("Data")
+    plt.grid()
+    plt.title("Combined Data Plot")
+    plt.xlim([0,TIME])
+     
 def moving_avg_filter(data_list) : 
     moving_avg_data_list = []
     window_size = 20
@@ -214,23 +223,14 @@ def main():
                     combined_data.append((i - (mavg_pressure_list_norm[idx]))/2)
                     combined_time = time_band
                     
-            plt.figure(5)
-            plt.plot(combined_time,combined_data)
-            plt.xlabel("Time")
-            plt.ylabel("Data")
-            plt.grid()
-            plt.title("Combined Data Plot")
-            
-                    
+            combined_pred,___ = pred(combined_data,1)
+            print(f"Combined pred: {combined_pred}")
+            plot_combined(combined_time,combined_data,5)
+            plt.show() 
             
             
             
-            
-            
-            plt.show()
-            
-            print(f"Pressure Pred: {pressure_pred} \nBand pred: {band_pred}")
-            
+                        
         elif user == "N" or user == "n" : 
             break
         
