@@ -14,7 +14,7 @@ from sklearn.model_selection import train_test_split
 from scipy.fft import fft, fftfreq
 from scipy.signal import find_peaks
 
-TIME = 10 # define time 
+TIME = 20 # define time 
 
 # the target string to determine if STM 32 is connected 
 STM32Name = "STMicroelectronics STLink Virtual COM Port"
@@ -138,7 +138,7 @@ def moving_avg_filter(data_list) :
 
 def pred(data_list): 
     
-    valley_indices, ___ = find_peaks(data_list, distance=50, prominence=600)
+    valley_indices, ___ = find_peaks(data_list, distance=50, prominence=0.3)
     
     return len(valley_indices), valley_indices
 
@@ -171,32 +171,18 @@ def main():
             
             mean_pressure = np.mean(mavg_pressure_list)
             std_presure = np.std(mavg_pressure_list)
-            mavg_pressure_list_norm = (mavg_band_list - mean_pressure) / std_presure
+            mavg_pressure_list_norm = (mavg_pressure_list - mean_pressure) / std_presure
+
             time_pressure = np.linspace(0, TIME, len(mavg_pressure_list_norm))
-            time_band = np.linspace(0, TIME, len(mavg_pressure_list_norm))
+            time_band = np.linspace(0, TIME, len(mavg_band_list_norm))
 
-            plt.figure()
-            plt.subplot(1,2,1)
-            plot(time_band,mavg_band_list_norm)
-            plt.title("Normalised Band Graph")
-            plt.xlabel("Time")
-            plt.ylabel("Band")
-            plt.grid()
+            plot(time_pressure, mavg_pressure_list_norm, time_band, mavg_band_list_norm,figname = "MAVG_NORM",fig_num=3)
 
-            plt.subplot(1,2,2)
-            plot(time_pressure,mavg_pressure_list_norm)
-            plt.title("Normalised Pressure Graph")
-            plt.xlabel("Time")
-            plt.ylabel("Pressure")
-            plt.grid()
-            
-            plt.show()
-            
             ## Data Processing     
-            band_pred, ___ = pred(-(np.array(mavg_band_list)))
-            pressure_pred, ___ = pred(mavg_pressure_list)
+            band_pred, ___ = pred(-(np.array(mavg_band_list_norm)))
+            pressure_pred, ___ = pred(-mavg_pressure_list_norm)
             
-            print(f"Band pred: {band_pred}\nPressure Pred: {pressure_pred}")
+            print(f"Pressure Pred: {pressure_pred} \nBand pred: {band_pred}")
             
         elif user == "N" or user == "n" : 
             break
