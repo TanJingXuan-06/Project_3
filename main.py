@@ -13,8 +13,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from scipy.fft import fft, fftfreq
 from scipy.signal import find_peaks
+import datetime as dt
+import matplotlib.animation as animation
 
 TIME = 10 # define time 
+
+ax = plt.figure()
+
+# animation plot array
 
 # the target string to determine if STM 32 is connected 
 STM32Name = "STMicroelectronics STLink Virtual COM Port"
@@ -74,6 +80,9 @@ def gather_data() :
         end_time = time.time()
         time_diff = end_time - start_time
 
+        t = 0
+        t_list = []
+
         # take data according to a time frame we set 
         while time_diff <= TIME : 
             
@@ -85,6 +94,8 @@ def gather_data() :
             if "Sensor 1: " in unprocessed_data[0]: 
                 pressure = int(unprocessed_data[0].split(": ")[1])
                 pressure_list.append(pressure)
+                t+=1
+                t_list.append(t)
                 print(f"Sensor 1 : {pressure}")
     
                 
@@ -95,9 +106,11 @@ def gather_data() :
                 
             end_time = time.time()
             time_diff = end_time - start_time
- 
 
-                        
+            # Set up plot to call animate() function periodically
+            ani = animation.FuncAnimation(ax, animate, fargs=(t_list, pressure_list), interval=1000)
+            plt.show()
+         
         return pressure_list , band_list 
                  
     except (KeyboardInterrupt, serial.SerialException) as e:
@@ -105,6 +118,23 @@ def gather_data() :
         
     ser.write(b"STP")       #"Send RUN to STM32"
     
+# This function is called periodically from FuncAnimation
+def animate(xs, ys):
+
+    # Limit x and y lists to 20 items
+    xs = xs[-20:]
+    ys = ys[-20:]
+
+    # Draw x and y lists
+    ax.clear()
+    ax.plot(xs, ys)
+
+    # Format plot
+    plt.xticks(rotation=45, ha='right')
+    plt.subplots_adjust(bottom=0.30)
+    plt.title('TMP102 Temperature over Time')
+    plt.ylabel('Temperature (deg C)')
+
 def plot(time_pressure,pressure_list, time_band,band_list,figname,fig_num = 1) : 
     plt.figure(fig_num,figsize=(10,6))
     plt.subplot(2,1,1)
