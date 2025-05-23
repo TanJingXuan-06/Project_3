@@ -251,14 +251,23 @@ def main():
             corrected_combined_pred,___ = pred(corrected_combined_data,0.9)
             print(f"Breathe Rate (Corrected Combined Pred): {corrected_combined_pred}")
             plt.show() 
-                        
-            # with open("Project_3/combined_data.csv", 'w', newline='') as file:
-            #     writer = csv.writer(file)
-            #     writer.writerow(combined_data)
+            
+            with open("Project_3/csv_files/band_data.csv", 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(band_list)
                 
-            # with open("Project_3/corrected_combined_data.csv", 'w', newline='') as file:
-            #     writer = csv.writer(file)
-            #     writer.writerow(corrected_combined_data)
+            with open("Project_3/csv_files/pressure_data.csv", 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(pressure_list)    
+                
+                        
+            with open("Project_3/csv_files/combined_data.csv", 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(combined_data)
+                
+            with open("Project_3/csv_files/corrected_combined_data.csv", 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(corrected_combined_data)
                                 
              
         elif user == "N" or user == "n" : 
