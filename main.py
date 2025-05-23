@@ -191,7 +191,7 @@ def main():
             # plotting 
             time_pressure = np.linspace(0,TIME , len(pressure_list) )
             time_band= np.linspace(0,TIME , len(band_list) )
-            plot(time_pressure, pressure_list, time_band, band_list, figname = "Raw",fig_num=1)
+            # plot(time_pressure, pressure_list, time_band, band_list, figname = "Raw",fig_num=1)
             
             # Noise Reduction digiting signal processing 
             mavg_pressure_list = moving_avg_filter(pressure_list)
@@ -199,7 +199,7 @@ def main():
             mavg_band_list = moving_avg_filter(mavg_band_list)
             time_pressure = np.linspace(0,TIME , len(mavg_pressure_list) )
             time_band= np.linspace(0,TIME , len(mavg_band_list) )
-            plot(time_pressure, mavg_pressure_list, time_band, mavg_band_list,figname = "MAVG",fig_num=2)
+            # plot(time_pressure, mavg_pressure_list, time_band, mavg_band_list,figname = "MAVG",fig_num=2)
             
             mean_band = np.mean(mavg_band_list)
             std_band = np.std(mavg_band_list)
@@ -211,15 +211,16 @@ def main():
             time_pressure = np.linspace(0, TIME, len(mavg_pressure_list_norm))
             time_band = np.linspace(0, TIME, len(mavg_band_list_norm))
 
-
+            
+            
             ## Data Processing     
             band_pred, ___ = pred((np.array(mavg_band_list_norm)),0.2)
             pressure_pred, ___ = pred(-mavg_pressure_list_norm,0.3)
             
             # print(f"Pressure Pred: {pressure_pred} \nBand pred: {band_pred}")
-            plot(time_pressure, mavg_pressure_list_norm, time_band, mavg_band_list_norm,figname = "MAVG_NORM",fig_num=3)          
+            # plot(time_pressure, mavg_pressure_list_norm, time_band, mavg_band_list_norm,figname = "MAVG_NORM",fig_num=3)          
             
-            plot_together(time_pressure, -mavg_pressure_list_norm, time_band, mavg_band_list_norm,figname = "MAVG_NORM_TGT",fig_num=4)
+            # plot_together(time_pressure, -mavg_pressure_list_norm, time_band, mavg_band_list_norm,figname = "MAVG_NORM_TGT",fig_num=4)
             
             combined_data = []
 
@@ -239,8 +240,9 @@ def main():
                     combined_time = time_band
                     
             combined_pred,___ = pred(combined_data,1)
-            plot_combined(combined_time,combined_data,5,"Before Correction")
-            print(f"Breathe Rate (Combined Pred): {combined_pred}")
+            # plot_combined(combined_time,combined_data,5,"Before Correction")
+            print(f"Number of Breathe (Combined Pred): {combined_pred}")
+            print(f"Breathe Rate: {combined_pred*60/TIME}")
             
             
             
@@ -248,26 +250,28 @@ def main():
             corrected_combined_data = combined_data - z 
             plot_combined(combined_time,corrected_combined_data,6,"After Correction")
             
-            corrected_combined_pred,___ = pred(corrected_combined_data,0.9)
-            print(f"Breathe Rate (Corrected Combined Pred): {corrected_combined_pred}")
+            # corrected_combined_pred,___ = pred(corrected_combined_data,0.9)
+            # print(f"Breathe Rate (Corrected Combined Pred): {corrected_combined_pred}")
             plt.show() 
             
-            with open("Project_3/csv_files/band_data.csv", 'a', newline='') as file:
+            true_label = int(input("Breathe Rate: "))
+                        
+            with open("Project_3/csv_files/MSE.csv", 'a', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(band_list)
+                writer.writerow([true_label,combined_pred])
                 
-            with open("Project_3/csv_files/pressure_data.csv", 'a', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(pressure_list)    
+            # with open("Project_3/csv_files/pressure_data.csv", 'a', newline='') as file:
+            #     writer = csv.writer(file)
+            #     writer.writerow(pressure_list)    
                 
                         
-            with open("Project_3/csv_files/combined_data.csv", 'a', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(combined_data)
+            # with open("Project_3/csv_files/combined_data.csv", 'a', newline='') as file:
+            #     writer = csv.writer(file)
+            #     writer.writerow(combined_data)
                 
-            with open("Project_3/csv_files/corrected_combined_data.csv", 'a', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(corrected_combined_data)
+            # with open("Project_3/csv_files/corrected_combined_data.csv", 'a', newline='') as file:
+            #     writer = csv.writer(file)
+            #     writer.writerow(corrected_combined_data)
                                 
              
         elif user == "N" or user == "n" : 

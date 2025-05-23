@@ -1,0 +1,161 @@
+import serial
+from serial.tools import list_ports
+import time 
+import matplotlib.pyplot as plt
+import csv 
+import numpy as np 
+from scipy import integrate
+
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from scipy.fft import fft, fftfreq
+from scipy.signal import find_peaks
+from scipy import sparse
+from scipy.sparse.linalg import spsolve
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+
+
+# Define the exponential function
+def logistic_psychometric_curve(h, k, h0):
+   return 1/(1 + np.exp(-k*(h - h0)))
+
+
+def plot_combined(combined_time,combined_data,fignum,title):
+    plt.figure(fignum,figsize=(30,4))
+    plt.plot(combined_time,combined_data)
+    plt.xlabel("Time")
+    plt.ylabel("Data")
+    plt.grid()
+    plt.title(f"Combined Data Plot {title}")
+
+
+
+def main() :
+    combined_data = []
+
+
+    with open("Project_3/csv_files/combined_data.csv", 'r', newline='') as file:
+        reader = csv.reader(file)
+        
+        for line in reader :
+        
+            for i in line:
+                combined_data.append(float(i))
+        
+        time_pressure = np.linspace(0,len(combined_data) - 1 , len(combined_data) )
+        
+        valley_indices, ___  = find_peaks(-np.array(combined_data), distance=50, prominence=1.0)
+        
+        print(len(valley_indices))
+        
+       
+        wave_percen = []
+        
+        for idx, i in enumerate(valley_indices) : 
+            
+            if idx == len(valley_indices) - 1 : 
+                break 
+            
+            if idx == 0 : 
+                
+                wave = combined_data[0:i+1]
+                time_wave =  np.linspace(0,len(wave) - 1 , len(wave) )
+                
+                for index in range (len(wave)) : 
+                    check_wave = wave[0:index]
+                    
+                    val, __  = find_peaks(check_wave, distance=50, prominence=1.0) 
+                    
+                    if len(val) >= 1 : 
+                        wave_percen.append(index/len(wave)) 
+                        break 
+                    
+                    
+                    
+                
+            else : 
+                wave = combined_data[i:valley_indices[idx + 1] + 1]
+                time_wave =  np.linspace(0,len(wave) - 1 , len(wave) )
+                for index in range (len(wave)) : 
+                    check_wave = wave[0:index]
+                    
+                    val, __  = find_peaks(check_wave, distance=50, prominence=1.0) 
+                    
+                    if len(val) >= 1 : 
+                        wave_percen.append(index/len(wave)) 
+                        break 
+         
+        num_wave = []
+                   
+        for i in wave_percen : 
+            
+            counter = 0 
+            
+            for j in wave_percen : 
+                
+                if j <= i : 
+                    counter += 1 
+            
+            num_wave.append((counter/len(wave_percen)))
+        
+        # print(wave_percen)
+        
+        # print(num_wave)
+              
+        popt, _ = curve_fit(logistic_psychometric_curve, wave_percen, num_wave, method='dogbox')
+        # print(popt)
+        k, h0 = popt
+        
+        # 1/(1 + np.exp(-k*(h - h0))) = y 
+        
+        
+
+        x = np.linspace(0, 1, 100)
+        pred = logistic_psychometric_curve(x, k, h0)
+        print(f"Just-noticeable Difference (JND) = {h0:.2f}")
+
+        plt.figure(figsize=(15, 5))
+        plt.scatter(wave_percen, num_wave, s=5, color='blue', alpha=0.8)
+        plt.plot(x, pred, color='red')
+        
+        for idx, i in enumerate(pred) : 
+            if i >= 0.5 :
+   
+                break        
+        
+        plt.xlabel('Phase of Wave'); plt.ylabel('Detection Rate')
+        plt.title('JND')
+        plt.tight_layout()
+        plt.grid()
+        bbox = dict(boxstyle="round", fc="0.8")
+        arrowprops = dict(
+            arrowstyle="->",
+            color = 'purple'
+            # This makes a slight angle; remove this line for a straight arrow
+        )
+
+        plt.annotate(
+            f'data = ({(np.log(1/0.5 -1 ) / -(k)) + h0:.2f}, {0.5:.2f})',
+            xy=((np.log(1/0.5 -1 ) / -(k)) + h0, 0.5),
+            xytext=(-100, 20),  # Text offset to the left
+            textcoords='offset points',
+            bbox=bbox,
+            arrowprops=arrowprops
+        )
+        
+        plt.plot([0,(np.log(1/0.5 -1 ) / -(k)) + h0], [0.5,0.5],color = 'black',linestyle = '--')
+        plt.plot([(np.log(1/0.5 -1 ) / -(k)) + h0,(np.log(1/0.5 -1 ) / -(k)) + h0], [0,0.5], color = 'black',linestyle = '--')
+        plt.xlim(0,1)
+        plt.ylim(0,1)
+        
+        
+        
+        plt.show()
+
+if __name__ == "__main__":
+    main()     
