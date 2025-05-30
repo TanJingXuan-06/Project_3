@@ -16,8 +16,8 @@ from scipy.signal import find_peaks
 from scipy import sparse
 from scipy.sparse.linalg import spsolve
 
-TIME = 60 # define time 
-
+TIME = 30 # define time 
+ 
 # the target string to determine if STM 32 is connected 
 STM32Name = "STMicroelectronics STLink Virtual COM Port"
 
@@ -220,7 +220,7 @@ def main():
             # print(f"Pressure Pred: {pressure_pred} \nBand pred: {band_pred}")
             # plot(time_pressure, mavg_pressure_list_norm, time_band, mavg_band_list_norm,figname = "MAVG_NORM",fig_num=3)          
             
-            # plot_together(time_pressure, -mavg_pressure_list_norm, time_band, mavg_band_list_norm,figname = "MAVG_NORM_TGT",fig_num=4)
+            plot_together(time_pressure, -mavg_pressure_list_norm, time_band, mavg_band_list_norm,figname = "MAVG_NORM_TGT",fig_num=4)
             
             combined_data = []
 
@@ -239,16 +239,16 @@ def main():
                     combined_data.append((i - (mavg_pressure_list_norm[idx]))/2)
                     combined_time = time_band
                     
-            combined_pred,___ = pred(combined_data,1)
-            # plot_combined(combined_time,combined_data,5,"Before Correction")
+            combined_pred,___ = pred(combined_data,1.5)
+            plot_combined(combined_time,combined_data,5,"Before Correction")
             print(f"Number of Breathe (Combined Pred): {combined_pred}")
-            print(f"Breathe Rate: {combined_pred*60/TIME}")
+            print(f"Breathe Rate (per min): {round(combined_pred*60/TIME,3)}")
             
             
             
             z = baseline_als(combined_data,lam=1e5,p =0.01)
             corrected_combined_data = combined_data - z 
-            plot_combined(combined_time,corrected_combined_data,6,"After Correction")
+            # plot_combined(combined_time,corrected_combined_data,6,"After Correction")
             
             # corrected_combined_pred,___ = pred(corrected_combined_data,0.9)
             # print(f"Breathe Rate (Corrected Combined Pred): {corrected_combined_pred}")
@@ -256,9 +256,9 @@ def main():
             
             true_label = int(input("Breathe Rate: "))
                         
-            with open("Project_3/csv_files/MSE.csv", 'a', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow([true_label,combined_pred])
+            # with open("Project_3/csv_files/MSE.csv", 'a', newline='') as file:
+            #     writer = csv.writer(file)
+            #     writer.writerow([true_label,combined_pred])
                 
             # with open("Project_3/csv_files/pressure_data.csv", 'a', newline='') as file:
             #     writer = csv.writer(file)

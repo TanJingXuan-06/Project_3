@@ -19,15 +19,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
-from main import moving_avg_filter, baseline_als
+from main import moving_avg_filter, baseline_als, pred
 
+NUMBER = 4
     
 def plot_together(time_pressure,pressure_list, time_band,band_list,figname,fig_num = 1) : 
     fig ,ax1 = plt.subplots(figsize=(10,2))
     ax2 = ax1.twinx()
     pressure_line, = ax1.plot(time_pressure,pressure_list,color='blue')
-    plt.title(f"Inverted Pressure Data & Band Data Against Time")
-    ax1.set_ylabel("Inverted Pressure")
+    plt.title(f"Pressure Data & Band Data Against Time")
+    ax1.set_ylabel("Pressure")
     ax1.set_xlabel("Time (s)")
     plt.xlim([0,10])
     band_line, = ax2.plot(time_band,band_list,color='red') 
@@ -87,11 +88,11 @@ def main() :
             
         
             num += 1 
-            if num == 4 : 
+            if num ==  NUMBER : 
                 for i in line:
                     band_data.append(float(i))
                     
-            elif num > 4 : 
+            elif num > NUMBER : 
                 break 
             
     num = 0
@@ -103,11 +104,11 @@ def main() :
             
         
             num += 1 
-            if num == 4 : 
+            if num == NUMBER : 
                 for i in line:
                     pressure_data.append(float(i))
                     
-            elif num > 4 : 
+            elif num > NUMBER : 
                 break 
 
     time_band = np.linspace(0,60 , len(band_data) )
@@ -134,6 +135,7 @@ def main() :
     band_data = band_data[0:band_x+1]
      
     # plot(time_pressure,pressure_data, time_band,"RAW",band_data,fig_num = 1)
+    # plt.show()
     
     # Noise Reduction digiting signal processing 
     mavg_pressure_list = moving_avg_filter(pressure_data)
@@ -155,7 +157,9 @@ def main() :
     
     # plot(time_pressure,mavg_pressure_list_norm, time_band,"Filtered + Normalized",mavg_band_list_norm,fig_num = 3)
     # 
-    # plot_together(time_pressure, -mavg_pressure_list_norm, time_band, mavg_band_list_norm,figname = "MAVG_NORM_TGT",fig_num=4)
+    # plot_together(time_pressure, mavg_pressure_list_norm, time_band, mavg_band_list_norm,figname = "MAVG_NORM_TGT",fig_num=4)
+    # plot_together(time_pressure, -mavg_pressure_list_norm, time_band, mavg_band_list_norm,figname = "MAVG_NORM_TGT",fig_num=5)
+    
     
     combined_data = []
 
@@ -164,20 +168,35 @@ def main() :
         
         for idx, i in enumerate(mavg_pressure_list_norm) : 
             
-            combined_data.append((-i + mavg_band_list_norm[idx])/2)
+            combined_data.append((-i + mavg_band_list_norm[idx]))
             combined_time = time_pressure
         
     else : 
             
         for idx, i in enumerate(mavg_band_list_norm) : 
         
-            combined_data.append((i - (mavg_pressure_list_norm[idx]))/2)
+            combined_data.append((i - (mavg_pressure_list_norm[idx])))
             combined_time = time_band
     
-    plot_combined(combined_time,combined_data,5,"Before Correction")
+    # plot_combined(combined_time,combined_data,6,"Before Correction")
     z = baseline_als(combined_data,lam=1e5,p =0.01)
+    ___, idx = pred(combined_data,0.5)
+    print(___)
+    print(f"{idx} index")
+
+    # plt.plot(combined_time,z,linewidth = 1)
+    
+    # plt.legend(["Fused Sensor","Baseline"],loc='lower ')
     corrected_combined_data = combined_data - z 
-    plot_combined(combined_time,corrected_combined_data,6,"After Correction")
+    pred_time = [combined_time[172],combined_time[360],combined_time[677]]
+    pred_val = [corrected_combined_data[172],corrected_combined_data[360],corrected_combined_data[677]]
+    plot_combined(combined_time,corrected_combined_data,7,"After Correction")
+    plt.scatter(pred_time,pred_val,color = 'red',marker = 's',s = [20,20,20])
+    plt.scatter(pred_time,pred_val,color = 'red',marker = 's',s = [20,20,20])
+    
+    
+
+    
     plt.show()       
     
 if __name__ == "__main__":

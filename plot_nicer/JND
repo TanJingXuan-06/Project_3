@@ -119,9 +119,9 @@ def main() :
         pred = logistic_psychometric_curve(x, k, h0)
         print(f"Just-noticeable Difference (JND) = {h0:.2f}")
 
-        plt.figure(figsize=(15, 5))
+        plt.figure(figsize=(10, 4))
         plt.scatter(wave_percen, num_wave, s=5, color='blue', alpha=0.8)
-        plt.plot(x, pred, color='red')
+        plt.plot(x, pred, color='red',linewidth = 2)
         
         for idx, i in enumerate(pred) : 
             if i >= 0.5 :
@@ -153,7 +153,7 @@ def main() :
         plt.xlim(0,1)
         plt.ylim(0,1)
         
-        
+        plt.legend(["Data Points", "Fitted Curve"])
         
         plt.show()
 
